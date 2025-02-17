@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>KI Chat</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            text-align: center;
+        }
+        #chat-box {
+            width: 50%;
+            margin: auto;
+            height: 300px;
+            border: 1px solid #ccc;
+            padding: 10px;
+            overflow-y: auto;
+            text-align: left;
+        }
+        input, button {
+            margin-top: 10px;
+            padding: 8px;
+        }
+    </style>
+</head>
+<body>
+    <h2>Chat mit Lokaler KI</h2>
+    <div id="chat-box"></div>
+    <input type="text" id="user-input" placeholder="Schreib etwas...">
+    <button onclick="sendMessage()">Senden</button>
+    <br><br>
+    <input type="file" id="file-upload">
+    <button onclick="uploadFile()">Datei hochladen</button>
+
+    <script>
+        function sendMessage() {
+            let input = document.getElementById("user-input").value;
+            if (input.trim() === "") return;
+            
+            fetch("/chat", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ "message": input })
+            })
+            .then(response => response.json())
+            .then(data => {
+                let chatBox = document.getElementById("chat-box");
+                chatBox.innerHTML += "<p><b>Du:</b> " + input + "</p>";
+                chatBox.innerHTML += "<p><b>KI:</b> " + data.response + "</p>";
+                chatBox.scrollTop = chatBox.scrollHeight;
+            });
+
+            document.getElementById("user-input").value = "";
+        }
+
+        function uploadFile() {
+            let fileInput = document.getElementById("file-upload").files[0];
+            if (!fileInput) {
+                alert("Bitte eine Datei auswählen!");
+                return;
+            }
+
+            let formData = new FormData();
+            formData.append("file", fileInput);
+            
+            fetch("/upload", { method: "POST", body: formData })
+            .then(response => response.json())
+            .then(data => alert(data.message));
+        }
+    </script>
+</body>
+</html>
